@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Pular Obstáculos</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #87CEEB;
+        }
+        #game {
+            width: 400px;
+            height: 200px;
+            border: 2px solid #000;
+            position: relative;
+            overflow: hidden;
+            background-color: #fff;
+        }
+        #player {
+            width: 30px;
+            height: 30px;
+            background-color: red;
+            position: absolute;
+            bottom: 0;
+            left: 50px;
+        }
+        .obstacle {
+            width: 30px;
+            height: 30px;
+            background-color: green;
+            position: absolute;
+            bottom: 0;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="game">
+        <div id="score">Pontos: 0</div>
+        <div id="player"></div>
+    </div>
+    <script>
+        const player = document.getElementById('player');
+        const game = document.getElementById('game');
+        const scoreDisplay = document.getElementById('score');
+
+        let isJumping = false;
+        let score = 0;
+
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space' && !isJumping) {
+                jump();
+            }
+        });
+
+        function jump() {
+            isJumping = true;
+            player.style.bottom = '100px'; // Aumenta a altura do pulo
+
+            setTimeout(() => {
+                player.style.bottom = '0px'; // Volta ao chão
+                isJumping = false;
+            }, 500); // Tempo do pulo
+        }
+
+        function createObstacle() {
+            const obstacle = document.createElement('div');
+            obstacle.classList.add('obstacle');
+            obstacle.style.left = '400px';
+            game.appendChild(obstacle);
+            moveObstacle(obstacle);
+        }
+
+        function moveObstacle(obstacle) {
+            const obstacleInterval = setInterval(() => {
+                let obstaclePosition = parseInt(window.getComputedStyle(obstacle).getPropertyValue('left'));
+
+                if (obstaclePosition < -30) {
+                    clearInterval(obstacleInterval);
+                    game.removeChild(obstacle);
+                    score++;
+                    scoreDisplay.textContent = 'Pontos: ' + score; // Atualiza a pontuação
+                } else {
+                    obstacle.style.left = obstaclePosition - 5 + 'px';
+
+                    // Detecta colisão
+                    if (obstaclePosition < 80 && obstaclePosition > 50 && player.style.bottom === '0px') {
+                        alert('Game Over! Seu score: ' + score);
+                        clearInterval(obstacleInterval);
+                        document.location.reload(); // Reinicia o jogo
+                    }
+                }
+            }, 20);
+        }
+
+        setInterval(createObstacle, 2000); // Cria um obstáculo a cada 2 segundos
+    </script>
+</body>
+</html>

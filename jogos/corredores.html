@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo 3D de Corredores</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Configurações iniciais
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Criar o chão
+        const planeGeometry = new THREE.PlaneGeometry(5, 100);
+        const planeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide });
+        const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.rotation.x = - Math.PI / 2;
+        scene.add(plane);
+
+        // Criar o jogador
+        const playerGeometry = new THREE.BoxGeometry(0.5, 1, 0.5);
+        const playerMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const player = new THREE.Mesh(playerGeometry, playerMaterial);
+        player.position.y = 0.5; // Eleva o jogador um pouco
+        scene.add(player);
+
+        // Posicionar a câmera
+        camera.position.z = 5;
+
+        // Lista de obstáculos
+        const obstacles = [];
+
+        function createObstacle() {
+            const obstacleGeometry = new THREE.BoxGeometry(0.5, 1, 0.5);
+            const obstacleMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+            const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+            obstacle.position.x = Math.random() * 4 - 2; // Posição aleatória no eixo X
+            obstacle.position.z = -50; // Começa longe
+            scene.add(obstacle);
+            obstacles.push(obstacle);
+        }
+
+        // Animação
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Move os obstáculos
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].position.z += 0.1; // Velocidade
+                if (obstacles[i].position.z > 5) {
+                    scene.remove(obstacles[i]);
+                    obstacles.splice(i, 1); // Remove o obstáculo que passou
+                }
+            }
+
+            // Renderiza a cena
+            renderer.render(scene, camera);
+        }
+
+        // Criar obstáculos a cada segundo
+        setInterval(createObstacle, 1000);
+
+        animate();
+
+        // Controle do jogador
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'ArrowLeft') {
+                player.position.x -= 0.2; // Move para a esquerda
+            }
+            if (event.code === 'ArrowRight') {
+                player.position.x += 0.2; // Move para a direita
+            }
+        });
+
+        // Manter o jogador dentro dos limites do plano
+        function constrainPlayer() {
+            if (player.position.x < -2.5) player.position.x = -2.5;
+            if (player.position.x > 2.5) player.position.x = 2.5;
+        }
+
+        // Animação contínua com restrição
+        function animateWithConstrain() {
+            constrainPlayer();
+            animate();
+        }
+
+        animateWithConstrain();
+    </script>
+</body>
+</html>
